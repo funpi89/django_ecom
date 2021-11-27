@@ -3,6 +3,8 @@ from uuid import uuid4
 from django.utils import timezone
 from django.conf import settings
 from django.db.models import Sum, F
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 # Create your models here.
 
 User = settings.AUTH_USER_MODEL
@@ -66,11 +68,11 @@ class Order(models.Model):
 class Mapping(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='訂單')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='產品')
-    quality = models.IntegerField(default=1)
+    quantity = models.IntegerField('總價', default=1)
     # subtotal = models.DecimalField('小計', max_digits=6, decimal_places=2, default=0.00)
     @property
     def subtotal(self):
-        return self.product.discounted_price * self.quality
+        return self.product.discounted_price * self.quantity
 
     def __str__(self):
         return f"訂單編號: {self.order.id}-{self.product.title}"
@@ -79,22 +81,48 @@ class Mapping(models.Model):
         verbose_name = '訂單產品'
         verbose_name_plural = '訂單產品'
 
-    def save(self, *args, **kwargs):
-        super(Mapping, self).save(*args, **kwargs)
-        self.update_order_total()
+    # def save(self, *args, **kwargs):
+    #     super(Mapping, self).save(*args, **kwargs)
+    #     self.update_order_total()
+    #
+    # def delete(self, *args, **kwargs):
+    #     order = self.order
+    #     super(Mapping, self).delete(*args, **kwargs)
+    #     output = Mapping.objects.filter(order=order).aggregate(t=Sum(F('product__discounted_price') * F('quantity')))
+    #     order.total = output['t'] if output['t'] is not None else 0.0
+    #     order.save()
 
-    def delete(self, *args, **kwargs):
-        order = self.order
-        super(Mapping, self).delete(*args, **kwargs)
-        output = Mapping.objects.filter(order=order).aggregate(t=Sum(F('product__discounted_price') * F('quality')))
-        order.total = output['t'] if output['t'] is not None else 0.0
-        order.save()
+    # def update_order_total(self):
+    #     '''
+    #     self.order.total 更新總價
+    #     '''
+    #     order = self.order
+    #     output = Mapping.objects.filter(order=order).aggregate(t=Sum(F('product__discounted_price') * F('quantity')))
+    #     order.total = output['t']
+    #     order.save()
 
-    def update_order_total(self):
-        '''
-        self.order.total 更新總價
-        '''
-        order = self.order
-        output = Mapping.objects.filter(order=order).aggregate(t=Sum(F('product__discounted_price') * F('quality')))
-        order.total = output['t']
-        order.save()
+# def update_order_total(order):
+#     output = Mapping.objects.filter(order=order).aggregate(t=Sum(F('product__discounted_price') * F('quantity')))
+#     order.total = output['t'] if output['t'] is not None else 0.0
+#     order.save()
+#
+# @receiver(post_save, sender=Mapping)
+# def mapping_post_save(sender, *args, **kwargs):
+#     instance = kwargs['instance']
+#     order = instance.order
+#     update_order_total(order)
+#
+# @receiver(post_delete, sender=Mapping)
+# def mapping_post_delete(sender, *args, **kwargs):
+#     instance = kwargs['instance']
+#     order = instance.order
+#     update_order_total(order)
+
+@receiver(post_delete, sender=Mapping)
+@receiver(post_save, sender=Mapping)
+def update_order_total(sender, *args, **kwargs):
+    instance = kwargs['instance']
+    order = instance.order
+    output = Mapping.objects.filter(order=order).aggregate(t=Sum(F('product__discounted_price') * F('quantity')))
+    order.total = output['t'] if output['t'] is not None else 0.0
+    order.save()
