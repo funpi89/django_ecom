@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # user apps
     'shop',
+    'crm',
 ]
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'

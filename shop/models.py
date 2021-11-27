@@ -57,6 +57,10 @@ class Order(models.Model):
     total = models.DecimalField('總計', max_digits=6, decimal_places=2, default=0.00)
     status = models.CharField('訂單狀態', max_length=63, choices=StatusChoice.choices, default=StatusChoice.ORDER_SENT)
     products = models.ManyToManyField(Product, verbose_name='訂單內容', related_name='orders', through='Mapping')
+    name = models.CharField('姓名', max_length=15, blank=True, null=True)
+    phone = models.CharField('電話', max_length=15, blank=True, null=True)
+    address = models.CharField('地址', max_length=127, blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
 
     def __str__(self):
       return f"{self.id}"
