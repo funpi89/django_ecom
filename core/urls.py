@@ -26,3 +26,7 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+admin.site.index_title = 'Django Ecom Back Office'
+admin.site.site_header = 'Django Ecom Manage'
+admin.site.site_title = 'Django Ecom'
