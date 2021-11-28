@@ -19,6 +19,8 @@ def path_and_rename(instance, filename):
 class Category(models.Model):
     title = models.CharField('標題', max_length=63)
     primary_image = models.ImageField('圖片', null=True, default=None, upload_to=path_and_rename)
+    created_at = models.DateTimeField('建立於', auto_now_add=True)
+    updated_at = models.DateTimeField('更新於', auto_now=True)
 
     def __str__(self):
         return self.title
@@ -34,6 +36,8 @@ class Product(models.Model):
     original_price = models.DecimalField('原價', max_digits=6, decimal_places=2, default=0.00)
     discounted_price = models.DecimalField('特價', max_digits=6, decimal_places=2, default=0.00)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='產品類別')
+    created_at = models.DateTimeField('建立於', auto_now_add=True)
+    updated_at = models.DateTimeField('更新於', auto_now=True)
 
     def __str__(self):
         return self.title

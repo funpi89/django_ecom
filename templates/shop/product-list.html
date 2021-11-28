@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product list</title>
+</head>
+<body>
+{% for p in products %}
+<div>
+    <div>
+        <h2>{{ p.title }}</h2>
+        {% if p.primary_image %}
+        <img src="{{ p.primary_image.url }}" alt="{{ p.title }}" width="100px" height="100px">
+        {% endif %}
+        {% if p.description %}
+        <p>{{ p.description }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% for i in page_range %}
+    <a href="{% url 'shop:products' %}?p={{ i }}">
+        <button>{{ i }}</button>
+    </a>
+{% endfor %}
+</body>
+</html>
