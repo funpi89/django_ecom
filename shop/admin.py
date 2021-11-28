@@ -17,6 +17,10 @@ shop_admin.register(Category)
 shop_admin.register(Product)
 shop_admin.register(Order)
 
+class OrderProductInline(admin.StackedInline):
+    model = Mapping
+    extra = 1
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'image_preview', 'category', 'original_price', 'discounted_price']
@@ -31,3 +35,9 @@ class OrderAdmin(admin.ModelAdmin):
     list_editable = ['status']
     list_filter = ['status', 'created_at', 'updated_at']
     search_fields = ['name', 'phone', 'address']
+    inlines = [OrderProductInline]
+    actions = ['make_order_invoice']
+
+    @admin.action(description='開立發票')
+    def make_order_invoice(modeladmin, request, queryset):
+        queryset.update(status=Order.StatusChoice.INVOICE_MADE)
